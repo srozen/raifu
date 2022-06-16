@@ -1,5 +1,6 @@
 defmodule Raifu.Cell do
-  @behaviour GenServer
+  use GenServer
+  require Logger
   # Public API
   def start_link({position, _width, _length} = opts) do
     GenServer.start_link(__MODULE__, opts, name: cell_name(position))
@@ -19,6 +20,7 @@ defmodule Raifu.Cell do
   def init({position, width, length}) do
     neighbors = compute_neighborhood(position, width, length)
     alive = Enum.random([1,2]) == 2
+    Logger.debug("Cell #{cell_name(position)} started as #{alive}")
     {:ok, {alive, neighbors}}
   end
 
@@ -32,6 +34,7 @@ defmodule Raifu.Cell do
       {m,n}
     end
     |> Enum.filter(&filter_invalid_positions(&1, {x,y}, width, length))
+    |> Enum.map(&(cell_name(&1)))
   end
 
   defp filter_invalid_positions(position, cell_position, width, length) do
