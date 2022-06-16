@@ -1,7 +1,7 @@
 defmodule Raifu.Cell do
-  use GenServer
+  use GenServer, restart: :transient
   require Logger
-  # Public API
+  ## Public API
   def start_link({position, _width, _length} = opts) do
     GenServer.start_link(__MODULE__, opts, name: cell_name(position))
   end
@@ -15,7 +15,7 @@ defmodule Raifu.Cell do
     "cell#{pos}" |> String.to_atom()
   end
 
-  # GenServer Callbacks
+  # Implementation
   @impl true
   def init({position, width, length}) do
     neighbors = compute_neighborhood(position, width, length)
