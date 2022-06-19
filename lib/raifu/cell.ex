@@ -21,12 +21,28 @@ defmodule Raifu.Cell do
     neighbors = compute_neighborhood(position, width, length)
     alive = Enum.random([1,2]) == 2
     Logger.debug("Cell #{cell_name(position)} started as #{alive}")
-    {:ok, {alive, neighbors}}
+    {:ok, {alive, alive, neighbors}}
   end
 
   @impl true
-  def handle_call(:alive, _from, {alive, neighbors}) do
-    {:reply, alive, {alive, neighbors}}
+  def handle_call(:alive, _from, {alive, next_state, neighbors}) do
+    {:reply, alive, {alive, next_state, neighbors}}
+  end
+
+  @impl true
+  def handle_call(:next_state, _from, {alive, _, neighbors}) do
+    number_neighbors_alive = neighbors
+    |> Enum.each(fn neighbor -> send(neighbor, :alive) end)
+    |> Enum.count(fn alive -> alive end)
+
+    next_state = compute_next_state(alive, number_neighbors_alive)
+
+    {:reply, next_state, {alive, next_state, neighbors}}
+  end
+
+  @impl true
+  def handle_info(:tick, {_alive, next_state, neighbors}) do
+    {:noreply, {next_state, next_state, neighbors}}
   end
 
 
