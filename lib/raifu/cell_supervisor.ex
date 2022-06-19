@@ -7,25 +7,26 @@ defmodule Raifu.CellSupervisor do
     DynamicSupervisor.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def start_game({width, length} = _opts) do
+  def setup_cells({width, length} = _opts) do
     for x <- 0..width, y <- 0..length do
       cell_name = Cell.cell_name({x,y})
-      %{
+      spec = %{
         id: cell_name,
         start: {Cell, :start_link, [{{x, y}, width, length}]}
       }
+      DynamicSupervisor.start_child(__MODULE__, spec)
+      cell_name
     end
-    |> Enum.each(&(DynamicSupervisor.start_child(__MODULE__, &1)))
   end
 
-  def kill_all_childs() do
+  def destroy_cells() do
     DynamicSupervisor.which_children(__MODULE__)
     |> Enum.each(fn {_, pid, _, _} ->
       DynamicSupervisor.terminate_child(__MODULE__, pid)
     end)
   end
 
-  def count_children() do
+  def count_cells() do
     DynamicSupervisor.count_children(__MODULE__)
   end
 
