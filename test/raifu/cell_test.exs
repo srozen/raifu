@@ -12,6 +12,17 @@ defmodule RaifuTest.Cell do
     end
   end
 
+  describe "compute_next_state/2" do
+    test "returns the next state of the cell depending" do
+      refute Cell.compute_next_state(true, 1)
+      assert Cell.compute_next_state(true, 3)
+      assert Cell.compute_next_state(true, 4)
+      refute Cell.compute_next_state(true, 5)
+      assert Cell.compute_next_state(false, 3)
+      refute Cell.compute_next_state(true, 5)
+    end
+  end
+
   describe "compute neighborhood/3" do
     test "determine the proper set of neighbors for corner cells" do
       assert lists_are_equals?(Cell.compute_neighborhood({0,0}, 2, 2), [:cell01, :cell10, :cell11])

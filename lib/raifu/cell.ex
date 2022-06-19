@@ -29,6 +29,17 @@ defmodule Raifu.Cell do
     {:reply, alive, {alive, neighbors}}
   end
 
+
+  def compute_next_state(alive, number_neighbors_alive) do
+    case number_neighbors_alive do
+      n when alive and n < 2 -> false
+      n when alive and n > 4 -> false
+      3 when alive -> true
+      4 when alive -> true
+      3 when not alive -> true
+    end
+  end
+
   def compute_neighborhood({x,y}, width, length) do
     for m <- x-1..x+1, n <- y-1..y+1 do
       {m,n}

@@ -25,7 +25,7 @@ defmodule Raifu.CellSupervisor do
     end)
   end
 
-  def how_many_children() do
+  def count_children() do
     DynamicSupervisor.count_children(__MODULE__)
   end
 
