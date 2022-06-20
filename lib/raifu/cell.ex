@@ -10,9 +10,12 @@ defmodule Raifu.Cell do
     GenServer.call(name, :alive)
   end
 
-  def cell_name(position) do
-    pos = position |> Tuple.to_list() |> Enum.join()
-    "cell#{pos}" |> String.to_atom()
+  def next_state(name) do
+    GenServer.call(name, :next_state)
+  end
+
+  def tick(name) do
+    GenServer.call(name, :tick)
   end
 
   # Implementation
@@ -32,8 +35,8 @@ defmodule Raifu.Cell do
   @impl true
   def handle_call(:next_state, _from, {alive, _, neighbors}) do
     number_neighbors_alive = neighbors
-    |> Enum.each(fn neighbor -> send(neighbor, :alive) end)
-    |> Enum.count(fn alive -> alive end)
+      |> Enum.map(fn neighbor -> alive?(neighbor) end)
+      |> Enum.count(fn alive -> alive end)
 
     next_state = compute_next_state(alive, number_neighbors_alive)
 
@@ -41,18 +44,23 @@ defmodule Raifu.Cell do
   end
 
   @impl true
-  def handle_info(:tick, {_alive, next_state, neighbors}) do
-    {:noreply, {next_state, next_state, neighbors}}
+  def handle_call(:tick, _from, {_alive, next_state, neighbors}) do
+    {:reply, next_state, {next_state, next_state, neighbors}}
   end
 
+  def cell_name(position) do
+    pos = position |> Tuple.to_list() |> Enum.join()
+    "cell#{pos}" |> String.to_atom()
+  end
 
   def compute_next_state(alive, number_neighbors_alive) do
     case number_neighbors_alive do
       n when alive and n < 2 -> false
-      n when alive and n > 4 -> false
+      n when alive and n > 3 -> false
+      2 when alive -> true
       3 when alive -> true
-      4 when alive -> true
       3 when not alive -> true
+      _ -> false
     end
   end
 

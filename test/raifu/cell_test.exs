@@ -15,8 +15,8 @@ defmodule RaifuTest.Cell do
   describe "compute_next_state/2" do
     test "returns the next state of the cell depending" do
       refute Cell.compute_next_state(true, 1)
+      assert Cell.compute_next_state(true, 2)
       assert Cell.compute_next_state(true, 3)
-      assert Cell.compute_next_state(true, 4)
       refute Cell.compute_next_state(true, 5)
       assert Cell.compute_next_state(false, 3)
       refute Cell.compute_next_state(true, 5)
