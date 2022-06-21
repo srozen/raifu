@@ -9,7 +9,8 @@ defmodule Raifu.Application do
   def start(_type, _args) do
     children = [
       Raifu.CellSupervisor,
-      Raifu.Board
+      Raifu.Board,
+      Raifu.Runner
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -8,7 +8,7 @@ defmodule Raifu.Board do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def setup({width, length}) do
+  def setup(width, length) do
     GenServer.call(__MODULE__, {:setup, {width, length}})
   end
 
@@ -19,7 +19,6 @@ defmodule Raifu.Board do
   ## Implementation
   @impl true
   def init(_opts) do
-    Logger.debug("Board started.")
     {:ok, {false, nil, nil}}
   end
 
@@ -33,9 +32,8 @@ defmodule Raifu.Board do
 
   @impl true
   def handle_call(:tick, _from, {_running, cells, _} = state) do
-    cells |> Enum.map(fn cell -> Cell.next_state(cell) end)
-    cells |> Enum.map(fn cell -> Cell.tick(cell) end)
-    |> IO.inspect
-    {:reply, :ok, state}
+    cells |> Enum.map(fn cell -> Cell.compute_next_state(cell) end)
+    cell_states = cells |> Enum.map(fn cell -> Cell.toggle_next_state(cell) end)
+    {:reply, cell_states, state}
   end
 end
