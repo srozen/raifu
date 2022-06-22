@@ -39,8 +39,8 @@ sequenceDiagram
 ```bash
 iex -S mix run --no-halt
 
-# Then in iex, launch the game through the Runner
-Raifu.Runner.start_game(6,6)
+# Then in iex, launch the game through the Runner, specifying the dimensions of the board.
+Raifu.Runner.start_game(20,20)
 ```
 
 The Runner will then display the Game's board and update it upon each tick with the following format :
