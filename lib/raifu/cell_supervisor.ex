@@ -1,37 +1,52 @@
 defmodule Raifu.CellSupervisor do
+  @moduledoc """
+  Dynamic supervisor owning every cell process of the board.
+  """
+
   use DynamicSupervisor
-  alias Raifu.Cell
+
+  alias Raifu.{Cell, Grid}
 
   ## Public API
+
+  @spec start_link(keyword()) :: Supervisor.on_start()
   def start_link(opts) do
     DynamicSupervisor.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def setup_cells({width, length} = _opts) do
-    for x <- 0..width, y <- 0..length do
-      cell_name = Cell.cell_name({x,y})
-      spec = %{
-        id: cell_name,
-        start: {Cell, :start_link, [{{x, y}, width, length}]}
-      }
-      DynamicSupervisor.start_child(__MODULE__, spec)
-      cell_name
+  @doc "Starts one cell per position of the board, alive when listed in `alive`."
+  @spec start_cells(Grid.size(), Grid.topology(), MapSet.t(Grid.position())) :: :ok
+  def start_cells(size, topology, alive) do
+    for position <- Grid.positions(size) do
+      opts = [
+        position: position,
+        neighbors: Grid.neighbors(position, size, topology),
+        alive?: MapSet.member?(alive, position)
+      ]
+
+      {:ok, _pid} = DynamicSupervisor.start_child(__MODULE__, {Cell, opts})
     end
+
+    :ok
   end
 
-  def destroy_cells() do
-    DynamicSupervisor.which_children(__MODULE__)
-    |> Enum.each(fn {_, pid, _, _} ->
+  @doc "Terminates every cell."
+  @spec stop_cells() :: :ok
+  def stop_cells do
+    for {_id, pid, _type, _modules} <- DynamicSupervisor.which_children(__MODULE__) do
       DynamicSupervisor.terminate_child(__MODULE__, pid)
-    end)
+    end
+
+    :ok
   end
 
-  def count_cells() do
-    DynamicSupervisor.count_children(__MODULE__)
-  end
+  @doc "The number of running cells."
+  @spec count_cells() :: non_neg_integer()
+  def count_cells, do: DynamicSupervisor.count_children(__MODULE__).active
 
   ## Implementation
-  @impl true
+
+  @impl DynamicSupervisor
   def init(_opts) do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
